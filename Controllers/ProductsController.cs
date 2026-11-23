@@ -10,10 +10,11 @@ using p48_lessons_asp.Models.ProductRequestModels;
 using p48_lessons_asp.Services.FluentValidation;
 using p48_lessons_asp.Services.Slug;
 using p48_lessons_asp.Services.StorageService;
+using Microsoft.AspNetCore.Authorization;
 
 namespace p48_lessons_asp.Controllers
 {
-
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ProductsController : ControllerBase
@@ -88,7 +89,7 @@ namespace p48_lessons_asp.Controllers
         [Route("product-image")]
         public async Task<IActionResult> CreateProductImage([FromForm] CreateProductImageRequest model)
         {
-            var validationResult = _imageValidator.GetErrors(model);
+            var validationResult = await _imageValidator.GetErrorsAsync(model);
             if (validationResult != null)
             {
                 return new ObjectResult(validationResult) { StatusCode = 400 };
@@ -137,6 +138,13 @@ namespace p48_lessons_asp.Controllers
         {
             var productImage = await _dataContext.ProductImages
                 .FirstOrDefaultAsync(img => img.Id == id);
+            if (id == Guid.Empty)
+            {
+                return BadRequest(new
+                {
+                    Message = "Invalid product image ID"
+                });
+            }
 
             if (productImage == null)
             {
@@ -210,6 +218,7 @@ namespace p48_lessons_asp.Controllers
             }
         }
 
+        /*
         [HttpPost]
         [Route("create")]
         public async Task<IActionResult> CreateProduct([FromBody] CreateProductRequest? model)
@@ -288,6 +297,7 @@ namespace p48_lessons_asp.Controllers
                 };
             }
         }
+        */
 
         #region Old_example_without_db 
         /*

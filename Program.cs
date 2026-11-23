@@ -10,6 +10,10 @@ using p48_lessons_asp.Services.Slug;
 using Slugify;
 using Serilog;
 using p48_lessons_asp.Services.StorageService;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using p48_lessons_asp.Services.Auth;
 
 namespace p48_lessons_asp
 {
@@ -31,6 +35,33 @@ namespace p48_lessons_asp
             {
                 Log.Information("Running web-application");
                 var builder = WebApplication.CreateBuilder(args);
+                builder.Services.AddScoped<JwtService>();
+
+                builder.Services.AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme =
+                        JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme =
+                        JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                        ValidAudience = builder.Configuration["Jwt:Audience"],
+
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(
+                                builder.Configuration["Jwt:Key"]!
+                            )
+                        )
+                    };
+                });
                 ValidatorOptions.Global.LanguageManager.Culture = new CultureInfo("en");
 
                 // підключення логера замість стандартного
@@ -100,6 +131,7 @@ namespace p48_lessons_asp
                 }
 
                 app.UseStaticFiles();
+                app.UseAuthentication();
                 app.UseAuthorization();
 
                 // Зв'язує класи контролери з маршрутами
