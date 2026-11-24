@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using p48_lessons_asp.Services.Auth;
+using p48_lessons_asp.Models.UserRequestModels;
 
 namespace p48_lessons_asp
 {
@@ -62,6 +63,7 @@ namespace p48_lessons_asp
                         )
                     };
                 });
+                builder.Services.AddAuthorization();
                 ValidatorOptions.Global.LanguageManager.Culture = new CultureInfo("en");
 
                 // підключення логера замість стандартного
@@ -70,6 +72,7 @@ namespace p48_lessons_asp
                 builder.Services.AddSingleton<ISlugHelper, SlugHelper>();
                 builder.Services.AddSingleton<ISlugService, SlugService>();
                 builder.Services.AddSingleton<IStorageService, ServerFileStorageService>();
+                builder.Services.AddScoped<IValidator<UpdateProfileModel>, UpdateProfileValidator>();
 
                 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
